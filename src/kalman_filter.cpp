@@ -9,7 +9,9 @@ using Eigen::VectorXd;
  *   VectorXd or MatrixXd objects with zeros upon creation.
  */
 
-KalmanFilter::KalmanFilter() {}
+KalmanFilter::KalmanFilter() {
+  I_ = MatrixXd::Identity(4, 4);
+}
 
 KalmanFilter::~KalmanFilter() {}
 
@@ -45,9 +47,7 @@ void KalmanFilter::Update(const VectorXd &z) {
 
    // new state
    x_ = x_ + (K * y);
-   long x_size = x_.size();
-   MatrixXd I = MatrixXd::Identity(x_size, x_size);
-   P_ = (I - K * H_) * P_;
+   P_ = (I_ - K * H_) * P_;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
@@ -61,8 +61,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
    float vy = x_[3];
 
    float rho = sqrt(px*px + py*py);
-   float phi = atan(py/px);
-   float rho_dot = (px * vx + py * vy) / sqrt(px*px + py*py);
+   float phi = atan2(py, px);
+   float rho_dot = (px * vx + py * vy) / rho;
    VectorXd z_pred = VectorXd(3);
    z_pred << rho, phi, rho_dot;
 
@@ -74,7 +74,5 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
    // new state
    x_ = x_ + (K * y);
-   long x_size = x_.size();
-   MatrixXd I = MatrixXd::Identity(x_size, x_size);
-   P_ = (I - K * H_) * P_;
+   P_ = (I_ - K * H_) * P_;
 }
